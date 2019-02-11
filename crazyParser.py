@@ -223,8 +223,8 @@ def dedup(domainslist, idfun=None): # code from http://www.peterbe.com/plog/uniq
     return result
 
 def main():
-    configDir = os.getcwd()
-    docRoot = os.getcwd()
+    configDir = /opt/CrazyParser/
+    docRoot = /opt/CrazyParser/
 
     # set up global files
     resultsFile = os.path.join(docRoot, 'results.csv')
