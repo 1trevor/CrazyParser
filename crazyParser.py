@@ -192,13 +192,10 @@ def sendMail(resultsFile):
     # if it is 1, there were no results
     numResults = sum(1 for line in open(resultsFile))
     if numResults == 1:
-        mail(mail_recip,
-                "Daily DNS typosquatting recon report", # subject line
-                "There were no new results in today's scan", # your message here
-                resultsFile, numResults)
+        pass
     else:
         mail(mail_recip,
-                "Daily DNS typosquatting recon report", # subject line
+                "Alert: New look-a-like domain registered", # subject line
                 "The results from today's DNS typosquatting scan are attached", # your message here
                 resultsFile, numResults)
 
@@ -211,7 +208,7 @@ def doCleanup(docRoot):
             print "Error removing temporary file: " + f
             pass
 
-def dedup(domainslist, idfun=None): # code from http://www.peterbe.com/plog/uniqifiers-benchmark
+def dedup(domainslist, idfun=None):
     if idfun is None:
         def idfun(x): return x
     seen = {}
