@@ -26,13 +26,7 @@ the results are mailed off for review and blocking in your web proxy.
             alternate location, the value of dnstwistPath will need to be
             updated to reflect its location.
 
-crazyParser.py - by @hardwaterhacker - http://hardwatersec.blogspot.com
-mike@hardwatersecurity.com
 '''
-
-__author__ = 'Mike Saunders - @hardwaterhacker'
-__version__ = '20151001'
-__email__ = 'mike@hardwatersecurity.com'
 
 import argparse
 import os
@@ -290,42 +284,11 @@ def dedup(domainslist, idfun=None): # code from http://www.peterbe.com/plog/uniq
     return result
 
 def main():
-    # Set up parser for command line arguments
-    parser = argparse.ArgumentParser(prog='crazyParser.py', description='crazyParser - a tool to detect new typosquatted domain registrations by using the output from dnstwist and/or urlcrazy', add_help=True)
-    parser.add_argument('-c', '--config', help='Directory location for required config files', default=os.getcwd(), required=False)
-    parser.add_argument('-o', '--output', help='Save results to file, defaults to results.csv', default='results.csv', required=False)
-    parser.add_argument('-d', '--directory', help='Directory for saving output, defaults to current directory', default=os.getcwd(), required=False)
-    parser.add_argument('-m', '--email', help='Email results upon completion, defaults to False', action="store_true", default=False, required=False)
-    parser.add_argument('--dnstwist', help='Use dnstwist for domain discovery, defaults to False', action="store_true", default=False, required=False)
-    parser.add_argument('--urlcrazy', help='Use urlcray for domain discovery, defaults to False', action="store_true", default=False, required=False)
-
-    if  len(sys.argv)==1:
-        parser.print_help()
-        sys.exit(1)
-    args = parser.parse_args()
-
-    if args.config != os.getcwd():
-        if os.path.isdir(args.config):
-            configDir = args.config
-        else:
-            print "ERROR! Specified configuration directory " + args.config + " does not exist!"
-            print "Exiting..."
-            sys.exit()
-    else:
-        configDir = args.config
-
-    if args.directory != os.getcwd():
-        if os.path.isdir(args.directory):
-            docRoot = args.directory
-        else:
-            print "ERROR! Specified output directory " + args.directory + " does not exist!"
-            print "Exiting..."
-            sys.exit()
-    else:
-        docRoot = args.directory
+    configDir = os.getcwd()
+    docRoot = os.getcwd()
 
     # set up global files
-    resultsFile = os.path.join(docRoot, args.output)
+    resultsFile = os.path.join(docRoot, 'results.csv')
     myDomains = os.path.join(configDir,'mydomains.csv')
     knownDomains = os.path.join(configDir,'knowndomains.csv')
 
@@ -333,22 +296,19 @@ def main():
     checkPerms(docRoot, resultsFile)
 
     # Check dependencies
-    checkDepends(myDomains, knownDomains, docRoot, resultsFile, args.urlcrazy, args.dnstwist)
+    checkDepends(myDomains, knownDomains, docRoot, resultsFile, False, True)
 
     # Clean up output files at exit
     atexit.register(doCleanup, docRoot)
     
     # Execute discovery
-    doCrazy(docRoot, resultsFile, myDomains, args.urlcrazy, args.dnstwist)
+    doCrazy(docRoot, resultsFile, myDomains, False, True)
 
     # parse output
-    parseOutput(docRoot, knownDomains, resultsFile, args.urlcrazy, args.dnstwist)
+    parseOutput(docRoot, knownDomains, resultsFile, False, True)
 
-    # send results if -m/--email is true
-    if args.email == True:
-        sendMail(resultsFile)
-    else:
-        pass
+    # send results
+    sendMail(resultsFile)
 
 if __name__ == "__main__":
     main()
