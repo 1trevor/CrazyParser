@@ -120,7 +120,7 @@ def doCrazy(docRoot, resultsFile, myDomains):
                 print "Unexpected error running dnstwist:", sys.exc_info()[0]
                 pass
     
-def parseOutput(docRoot, knownDomains, resultsFile, urlcrazy, dnstwist):
+def parseOutput(docRoot, knownDomains, resultsFile):
     # set up domains dictionary
     domains = []
 
@@ -131,33 +131,18 @@ def parseOutput(docRoot, knownDomains, resultsFile, urlcrazy, dnstwist):
         for row in reader:
             knowndom.append(row['Domain'])
 
-    if urlcrazy:
-        # Parse each urlcrazy temp file in tempFiles list
-        for file in tempFiles:
-            if file.endswith(".uctmp"):
-                with open (file, 'rbU') as csvfile:
-                    reader = csv.DictReader(row.replace('\0', '') for row in csvfile)
-                    for row in reader:
-                        if len(row) != 0:
-                            if row['CC-A'] != "?":
-                                if row['Typo'] in knowndom:
-                                    pass
-                                else:
-                                    domains.append(row['Typo'])
-
-    if dnstwist:
-        # Parse each dnstwist temp file in tempFiles list
-        for file in tempFiles:
-            if file.endswith(".dttmp"):
-                with open (file, 'rbU') as csvfile:
-                    reader = csv.reader(csvfile)
-                    next(reader) # Due to recent change in dnstwist, skip header line
-                    next(reader) # skip second line, contains original domain
-                    for row in reader:
-                        if row[1] in knowndom:
-                            pass
-                        else:
-                            domains.append(row[1])
+    # Parse each dnstwist temp file in tempFiles list
+    for file in tempFiles:
+        if file.endswith(".dttmp"):
+            with open (file, 'rbU') as csvfile:
+                reader = csv.reader(csvfile)
+                next(reader) # Due to recent change in dnstwist, skip header line
+                next(reader) # skip second line, contains original domain
+                for row in reader:
+                    if row[1] in knowndom:
+                        pass
+                    else:
+                        domains.append(row[1])
                         
     # dedupe domains list
     domains = dedup(domains)
@@ -173,24 +158,6 @@ def parseOutput(docRoot, knownDomains, resultsFile, urlcrazy, dnstwist):
     outfile.close()
 
 def sendMail(resultsFile):
-    '''
-            sendMail sends the results of urlcrazy scans,
-            including diffs to your selected address
-            using a given address.
-
-            Specify your sending account username in mail_user.
-            Specify your account password in mail_pwd.
-
-            Configure for your mail server by modifying the
-            mailServer = line.
-
-            This assumes your mail server supports starttls.
-            Future versions will allow you to specify whether
-            or not to use starttls. To suppress starttls,
-            remove the line mailServer.starttls().
-
-    '''
-
     mail_user = "mail_sender_account"
     mail_pwd = "your_pass_here"
     mail_recip = ["recipient_address_1", "recipient_address_2"]
@@ -217,7 +184,7 @@ def sendMail(resultsFile):
             else:
                 pass
 
-            mailServer = smtplib.SMTP("smtp.gmail.com", 587)
+            mailServer = smtplib.SMTP("smtp.office365.com", 587)
             mailServer.ehlo()
             mailServer.starttls()
             mailServer.ehlo()
@@ -279,10 +246,10 @@ def main():
     atexit.register(doCleanup, docRoot)
     
     # Execute discovery
-    doCrazy(docRoot, resultsFile, myDomains, False, True)
+    doCrazy(docRoot, resultsFile, myDomains)
 
     # parse output
-    parseOutput(docRoot, knownDomains, resultsFile, False, True)
+    parseOutput(docRoot, knownDomains, resultsFile)
 
     # send results
     sendMail(resultsFile)
