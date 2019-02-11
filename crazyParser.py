@@ -64,7 +64,7 @@ def checkPerms(docRoot, resultsFile):
         print "Please check permissions.  Exiting..."
         sys.exit()
 
-def checkDepends(myDomains, knownDomains, docRoot, resultsFile, urlcrazy, dnstwist):
+def checkDepends(myDomains, knownDomains, docRoot, resultsFile):
     # Test if mydomains.csv exists
     if not os.access(myDomains, os.F_OK) or not os.access(knownDomains, os.F_OK):
         print "Required configuration files - mydomains.csv or knowndomains.csv - not found."
@@ -90,21 +90,12 @@ def checkDepends(myDomains, knownDomains, docRoot, resultsFile, urlcrazy, dnstwi
     else:
         pass
         
-    # Test if urlcrazy exists
-    if urlcrazy:
-        if not os.access(urlcrazyPath, os.F_OK):
-            print "URLCrazy specified as " + urlcrazyPath + " but was not found."
-            print "Please check urlcrazyPath in crazyParser.py.  Exiting..."
-            sys.exit()
-
-    # Test if dnstwist exists
-    if dnstwist:
-        if not os.access(dnstwistPath, os.F_OK):
-            print "DNStwist specified as " + dnstwistPath + "but was not found."
-            print "Please check urlcrazyPath in crazyParser.py.  Exiting..."
-            sys.exit()
+    if not os.access(dnstwistPath, os.F_OK):
+        print "DNStwist specified as " + dnstwistPath + "but was not found."
+        print "Please check dnstwistPath in crazyParser.py.  Exiting..."
+        sys.exit()
                  
-def doCrazy(docRoot, resultsFile, myDomains, urlcrazy, dnstwist):
+def doCrazy(docRoot, resultsFile, myDomains):
     # cleanup old results file
     try:
         os.remove(resultsFile)
@@ -116,32 +107,18 @@ def doCrazy(docRoot, resultsFile, myDomains, urlcrazy, dnstwist):
         for domain in domains:
             domain = domain.rstrip()
 
-            # Run urlcrazy if enabled
-            if urlcrazy:
-                ucoutfile = tempfile.NamedTemporaryFile('w', bufsize=-1, suffix='.uctmp', prefix=domain + '.', dir=docRoot, delete=False)
-                ucargs=[urlcrazyPath, '-f', 'csv', '-o', ucoutfile.name, domain]
-                try:
-                    with open(os.devnull, 'w') as devnull:
-                        subprocess.call(ucargs, stdout=devnull, close_fds=True, shell=False)
-                        tempFiles.append(ucoutfile.name)
-                except:
-                    # An error occurred running urlcrazy
-                    print "Unexpected error running urlcrazy:", sys.exc_info()[0]
-                    pass
-
             # Run dnstwist if enabled
-            dtargs=[dnstwistPath, '-r', '-c', domain]
-            if dnstwist:
-                dtoutfile = tempfile.NamedTemporaryFile('w', bufsize=-1, suffix='.dttmp', prefix=domain + '.', dir=docRoot, delete=False)
-                try:
-                    with open(dtoutfile.name, 'wb') as dtout:
-                        output=subprocess.check_output(dtargs, shell=False)
-                        dtout.write(output)
-                    tempFiles.append(dtoutfile.name)
-                except:
-                    # An error occurred running dnstwist
-                    print "Unexpected error running dnstwist:", sys.exc_info()[0]
-                    pass
+            dtargs=[dnstwistPath, '-r', '-f', 'csv', domain]
+	    dtoutfile = tempfile.NamedTemporaryFile('w', bufsize=-1, suffix='.dttmp', prefix=domain + '.', dir=docRoot, delete=False)
+            try:
+                with open(dtoutfile.name, 'wb') as dtout:
+                    output=subprocess.check_output(dtargs, shell=False)
+                    dtout.write(output)
+                tempFiles.append(dtoutfile.name)
+            except:
+                # An error occurred running dnstwist
+                print "Unexpected error running dnstwist:", sys.exc_info()[0]
+                pass
     
 def parseOutput(docRoot, knownDomains, resultsFile, urlcrazy, dnstwist):
     # set up domains dictionary
@@ -296,7 +273,7 @@ def main():
     checkPerms(docRoot, resultsFile)
 
     # Check dependencies
-    checkDepends(myDomains, knownDomains, docRoot, resultsFile, False, True)
+    checkDepends(myDomains, knownDomains, docRoot, resultsFile)
 
     # Clean up output files at exit
     atexit.register(doCleanup, docRoot)
