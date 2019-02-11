@@ -36,7 +36,10 @@ from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email import Encoders
 import atexit
+import automationassets
+from automationassets import AutomationAssetNotFound
 
+mail_creds = automationassets.get_automation_credential("alerts")
 dnstwistPath = '/opt/dnstwist/dnstwist.py' # update if your installation differs
 
 # set up global defaults
@@ -153,14 +156,12 @@ def parseOutput(docRoot, knownDomains, resultsFile):
     outfile.close()
 
 def sendMail(resultsFile):
-    mail_user = "mail_sender_account"
-    mail_pwd = "your_pass_here"
     mail_recip = ["recipient_address_1", "recipient_address_2"]
 
     def mail(to, subject, text, resultsFile, numResults):
             msg = MIMEMultipart()
 
-            msg['From'] = mail_user
+            msg['From'] = mail_creds["username"]
             msg['To'] = ", ".join(to)
             msg['Subject'] = subject
 
@@ -183,8 +184,8 @@ def sendMail(resultsFile):
             mailServer.ehlo()
             mailServer.starttls()
             mailServer.ehlo()
-            mailServer.login(mail_user, mail_pwd)
-            mailServer.sendmail(mail_user, to, msg.as_string())
+            mailServer.login(mail_creds["username"], mail_creds["password"])
+            mailServer.sendmail(mail_creds["username"], to, msg.as_string())
             mailServer.close()
     
     # this counts the number of line in the results file
