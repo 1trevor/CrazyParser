@@ -161,7 +161,7 @@ def sendMail(resultsFile):
         </style>
         </head>
             <body>
-                The following new domains have been recently registered. Please investigate!<br><br>
+                The following new domains have been registered recently. Please investigate!<br><br>
                 <table cellpadding="4" cellspacing="0">
                     <tr style="font-weight:bold">
                         <td>
@@ -169,9 +169,6 @@ def sendMail(resultsFile):
                         </td>
                         <td>
                             A record
-                        </td>
-                        <td>
-                            AAA record
                         </td>
                         <td>
                             MX record
@@ -184,7 +181,7 @@ def sendMail(resultsFile):
         rfile = open(resultsFile)
         lines = rfile.readlines()[1:]
         for line in lines:
-            html += "<tr><td>" + line.split(',')[1] + "</td><td>" + line.split(',')[2] + "</td><td>" + line.split(',')[3] + "</td><td>" + line.split(',')[4] + "</td><td>" + line.split(',')[5] + "</td></tr>"
+            html += "<tr><td>" + line.split(',')[1] + "</td><td>" + line.split(',')[2] + "</td><td>" + line.split(',')[4] + "</td><td>" + line.split(',')[5] + "</td></tr>"
         html += """</table>
             </body>
         </html>
