@@ -125,9 +125,9 @@ def parseOutput(docRoot, knownDomains, resultsFile):
     # write out results
     # this file will only contain the header if there are no new results
     with open(resultsFile, 'wb') as outfile:
-        outfile.write('fuzzer,domain-name,dns-a,dns-aaaa,dns-mx,dns-ns,geoip-country,whois-created,whois-updated,ssdeep-score')
+        outfile.write('fuzzer,domain-name,dns-a,dns-aaaa,dns-mx,dns-ns,geoip-country,whois-created,whois-updated,ssdeep-score\n')
         for row in domains:
-            outfile.write(row)
+            outfile.write(",".join(row) + '\n')
     outfile.close()
 
 def sendMail(resultsFile):
@@ -153,10 +153,17 @@ def sendMail(resultsFile):
     if numResults >= 2:
         html = """\
         <html>
+        <head>
+        <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+        </style>
+        </head>
             <body>
-                New results in today's scan:<br>
-                <table>
-                    <tr>
+                The following new domains have been recently registered. Please investigate!<br><br>
+                <table cellpadding="4" cellspacing="0">
+                    <tr style="font-weight:bold">
                         <td>
                             Domain
                         </td>
@@ -175,7 +182,7 @@ def sendMail(resultsFile):
                     </tr>
         """
         rfile = open(resultsFile)
-        lines = rfile.readlines()[2:]
+        lines = rfile.readlines()[1:]
         for line in lines:
             html += "<tr><td>" + line.split(',')[1] + "</td><td>" + line.split(',')[2] + "</td><td>" + line.split(',')[3] + "</td><td>" + line.split(',')[4] + "</td><td>" + line.split(',')[5] + "</td></tr>"
         html += """</table>
@@ -184,7 +191,7 @@ def sendMail(resultsFile):
         """
 
         mail(mail_recip,
-                "Alert: New look-a-like domain registered", # subject line
+                "Alert: New suspicious domain registration", # subject line
                 html, resultsFile, numResults)
 
 def doCleanup(docRoot):
